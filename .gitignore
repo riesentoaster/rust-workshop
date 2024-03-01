@@ -1,5 +1,2 @@
 target
 Cargo.lock
-
-# in case participants download rustlings here to have everything in one place
-rustlings
