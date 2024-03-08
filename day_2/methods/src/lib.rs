@@ -7,26 +7,26 @@ struct Bee {
     nectar: u32,
 }
 
-fn new_bee() -> Bee {
-    Bee { nectar: 0 }
+impl Bee {
+    fn new() -> Self {
+        Self { nectar: 0 }
+    }
+
+    fn collect_nectar(&mut self) {
+        self.nectar += 1
+    }
+
+    fn get_nectar(&self) -> u32 {
+        self.nectar
+    }
+
+    // SAVE THE BEES
+    fn die_for_the_glory_of_the_queen(self) -> u32 {
+        self.nectar
+    }
 }
 
-fn collect_nectar(bee: &mut Bee) {
-    bee.nectar += 1
-}
-
-/// check how much nectar the bee is carrying
-fn get_nectar(bee: &Bee) -> u32 {
-    bee.nectar
-}
-
-/// The bee won't exist anymore after this function call 😢
-/// Returns all the nectar the bee was carrying at the time of death.
-fn die_for_the_glory_of_the_queen(bee: Bee) -> u32 {
-    bee.nectar
-}
-
-#[cfg(deactivated)] // remove this line to activate the tests
+// #[cfg(deactivated)] // remove this line to activate the tests
 mod tests {
     use super::*;
 
