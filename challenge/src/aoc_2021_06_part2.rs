@@ -3,6 +3,14 @@ use rand::Rng;
 const FIXED_VALUES: [usize; 9] = [1421, 1401, 1191, 1154, 1034, 950, 905, 779, 768];
 
 pub fn aoc_2021_06_part2(input: &str) -> usize {
+    aoc_2021_06_part2_parse_manual(input)
+        .iter()
+        .zip(FIXED_VALUES)
+        .map(|(l, r)| l * r)
+        .sum()
+}
+
+pub fn aoc_2021_06_part2_slow_parse(input: &str) -> usize {
     aoc_2021_06_part2_parse(input)
         .iter()
         .zip(FIXED_VALUES)
@@ -10,14 +18,26 @@ pub fn aoc_2021_06_part2(input: &str) -> usize {
         .sum()
 }
 
-fn aoc_2021_06_part2_parse(input: &str) -> [usize; 9] {
+pub fn aoc_2021_06_part2_parse(input: &str) -> [usize; 9] {
     let mut out = [0; 9];
-    if input.contains(',') {
-        input
-            .split(',')
-            .map(|e| e.parse::<usize>().unwrap())
-            .for_each(|e| out[e] += 1);
-    }
+    input
+        .split(',')
+        .map(|e| e.parse::<usize>().unwrap())
+        .for_each(|e| out[e] += 1);
+    out
+}
+
+const ZERO: u8 = b'0';
+
+pub fn aoc_2021_06_part2_parse_manual(input: &str) -> [usize; 9] {
+    let mut out = [0; 9];
+    input
+        .chars()
+        .step_by(2)
+        .map(|e| e as u8)
+        .map(|e| e - ZERO)
+        .map(|e| e as usize)
+        .for_each(|e| out[e] += 1);
     out
 }
 
@@ -51,26 +71,42 @@ pub fn aoc_2021_06_part2_generate_str(len: usize) -> String {
 mod tests {
     use super::*;
     use rayon::prelude::*;
+    const TEST_LENGTHS: [usize; 4] = [1, 3, 10, 50];
+
     #[test]
     fn example() {
         let str = "3,4,3,1,2";
         let expected = 5934;
         assert_eq!(aoc_2021_06_part2(str), expected);
+        assert_eq!(aoc_2021_06_part2_slow_parse(str), expected);
         assert_eq!(aoc_2021_06_part2_naive(str), expected);
     }
 
     #[test]
-    fn naive_and_lookup_are_equal() {
-        (0..10).into_par_iter().for_each(|len| {
-            (0..20).into_par_iter().for_each(|_| {
+    fn impls_are_equal() {
+        TEST_LENGTHS.into_par_iter().for_each(|len| {
+            (0..(1000 / len)).into_par_iter().for_each(|_| {
+                let string = aoc_2021_06_part2_generate_str(len);
+                let fastest = aoc_2021_06_part2(&string);
+                let medium = aoc_2021_06_part2_slow_parse(&string);
+                let naive = aoc_2021_06_part2_naive(&string);
+                assert_eq!(fastest, medium, "{}: {}, {}", string, fastest, medium);
+                assert_eq!(fastest, naive, "{}: {}, {}", string, fastest, naive);
+            });
+        });
+    }
+    #[test]
+    fn automated_and_manual_parse_are_equal() {
+        TEST_LENGTHS.into_par_iter().for_each(|len| {
+            (0..(1000 / len)).into_par_iter().for_each(|_| {
                 let string = aoc_2021_06_part2_generate_str(len);
                 assert_eq!(
-                    aoc_2021_06_part2(&string),
-                    aoc_2021_06_part2_naive(&string),
-                    "{}: {}, {}",
+                    aoc_2021_06_part2_parse(&string),
+                    aoc_2021_06_part2_parse_manual(&string),
+                    "{}: {:?}, {:?}",
                     string,
-                    aoc_2021_06_part2(&string),
-                    aoc_2021_06_part2_naive(&string)
+                    aoc_2021_06_part2_parse(&string),
+                    aoc_2021_06_part2_parse_manual(&string)
                 )
             });
         });
